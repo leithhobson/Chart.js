@@ -25,14 +25,15 @@ module.exports = {
 					borderWidth: 20,
 					cubicInterpolationMode: 'default',
 					fill: false,
+					tension: 0.4
 				}
 			},
 			layout: {
 				padding: 32
 			},
 			scales: {
-				xAxes: [{display: false}],
-				yAxes: [{display: false}]
+				x: {display: false},
+				y: {display: false}
 			}
 		}
 	},

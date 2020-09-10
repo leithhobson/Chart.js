@@ -1,9 +1,7 @@
-/* global Chart */
-
 'use strict';
 
 (function() {
-	Chart.plugins.register({
+	Chart.register({
 		id: 'samples-filler-analyser',
 
 		beforeInit: function(chart, options) {

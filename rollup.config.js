@@ -1,62 +1,73 @@
+/* eslint-disable import/no-commonjs */
 /* eslint-env es6 */
 
-const commonjs = require('rollup-plugin-commonjs');
-const resolve = require('rollup-plugin-node-resolve');
+const babel = require('rollup-plugin-babel');
+const cleanup = require('rollup-plugin-cleanup');
+const dts = require('rollup-plugin-dts').default;
+const glob = require('glob');
+const inject = require('@rollup/plugin-inject');
+const json = require('@rollup/plugin-json');
+const resolve = require('@rollup/plugin-node-resolve').default;
 const terser = require('rollup-plugin-terser').terser;
-const optional = require('./rollup.plugins').optional;
-const stylesheet = require('./rollup.plugins').stylesheet;
 const pkg = require('./package.json');
 
 const input = 'src/index.js';
+const inputESM = {
+	'dist/chart.esm': 'src/index.esm.js',
+};
+const inputESMTypings = {};
+glob('src/helpers/helpers.*.js', (_er, files) => {
+	files.forEach(file => {
+		inputESM[file.replace(/src\/|helpers\.|\.js/g, '')] = file;
+	});
+	Object.keys(inputESM).forEach((key) => {
+		inputESMTypings[key.replace('src', 'types')] = inputESM[key].replace('src', 'types').replace(/\.js$/, '.d.ts');
+	});
+});
+
 const banner = `/*!
  * Chart.js v${pkg.version}
  * ${pkg.homepage}
- * (c) ${new Date().getFullYear()} Chart.js Contributors
+ * (c) ${(new Date(process.env.SOURCE_DATE_EPOCH ? (process.env.SOURCE_DATE_EPOCH * 1000) : new Date().getTime())).getFullYear()} Chart.js Contributors
  * Released under the MIT License
  */`;
 
 module.exports = [
-	// UMD builds (excluding moment)
-	// dist/Chart.min.js
-	// dist/Chart.js
+	// UMD builds
+	// dist/chart.min.js
+	// dist/chart.js
 	{
-		input: input,
+		input,
 		plugins: [
-			resolve(),
-			commonjs(),
-			stylesheet({
-				extract: true
+			inject({
+				ResizeObserver: 'resize-observer-polyfill',
+				Promise: 'promise-polyfill'
 			}),
-			optional({
-				include: ['moment']
+			json(),
+			resolve(),
+			babel(),
+			cleanup({
+				sourcemap: true
 			})
 		],
 		output: {
 			name: 'Chart',
-			file: 'dist/Chart.js',
-			banner: banner,
+			file: 'dist/chart.js',
+			banner,
 			format: 'umd',
 			indent: false,
-			globals: {
-				moment: 'moment'
-			}
 		},
-		external: [
-			'moment'
-		]
 	},
 	{
-		input: input,
+		input,
 		plugins: [
+			inject({
+				ResizeObserver: 'resize-observer-polyfill',
+				Promise: 'promise-polyfill'
+			}),
+			json(),
 			resolve(),
-			commonjs(),
-			optional({
-				include: ['moment']
-			}),
-			stylesheet({
-				extract: true,
-				minify: true
-			}),
+			babel(),
 			terser({
 				output: {
 					preamble: banner
@@ -65,55 +76,46 @@ module.exports = [
 		],
 		output: {
 			name: 'Chart',
-			file: 'dist/Chart.min.js',
+			file: 'dist/chart.min.js',
 			format: 'umd',
 			indent: false,
-			globals: {
-				moment: 'moment'
-			}
 		},
-		external: [
-			'moment'
-		]
 	},
 
-	// UMD builds (including moment)
-	// dist/Chart.bundle.min.js
-	// dist/Chart.bundle.js
+	// ES6 builds
+	// dist/chart.esm.js
+	// helpers/*.js
 	{
-		input: input,
+		input: inputESM,
 		plugins: [
+			json(),
 			resolve(),
-			commonjs(),
-			stylesheet()
-		],
-		output: {
-			name: 'Chart',
-			file: 'dist/Chart.bundle.js',
-			banner: banner,
-			format: 'umd',
-			indent: false
-		}
-	},
-	{
-		input: input,
-		plugins: [
-			resolve(),
-			commonjs(),
-			stylesheet({
-				minify: true
-			}),
-			terser({
-				output: {
-					preamble: banner
-				}
+			cleanup({
+				sourcemap: true
 			})
 		],
 		output: {
-			name: 'Chart',
-			file: 'dist/Chart.bundle.min.js',
-			format: 'umd',
-			indent: false
-		}
+			dir: './',
+			chunkFileNames: 'helpers/chunks/[name].js',
+			banner,
+			format: 'esm',
+			indent: false,
+		},
+	},
+	// ES6 Typings builds
+	// dist/chart.esm.d.ts
+	// helpers/*.d.ts
+	{
+		input: inputESMTypings,
+		plugins: [
+			dts()
+		],
+		output: {
+			dir: './',
+			chunkFileNames: 'helpers/chunks/[name].ts',
+			banner,
+			format: 'esm',
+			indent: false,
+		},
 	}
 ];

@@ -3,7 +3,7 @@
 
 <head>
 	<title>Line Styles</title>
-	<script src="../../../dist/Chart.min.js"></script>
+	<script src="../../../dist/chart.min.js"></script>
 	<script src="../../utils.js"></script>
 	<style>
 	canvas{
@@ -83,20 +83,20 @@
 					intersect: true
 				},
 				scales: {
-					xAxes: [{
+					x: {
 						display: true,
 						scaleLabel: {
 							display: true,
 							labelString: 'Month'
 						}
-					}],
-					yAxes: [{
+					},
+					y: {
 						display: true,
 						scaleLabel: {
 							display: true,
 							labelString: 'Value'
 						}
-					}]
+					}
 				}
 			}
 		};

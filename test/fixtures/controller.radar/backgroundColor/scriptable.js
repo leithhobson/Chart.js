@@ -30,7 +30,8 @@ module.exports = {
 						return index === 0 ? '#ff0000'
 							: index === 1 ? '#00ff00'
 							: '#ff00ff';
-					}
+					},
+					fill: true,
 				},
 				point: {
 					backgroundColor: '#0000ff',
@@ -39,9 +40,7 @@ module.exports = {
 			},
 			scale: {
 				display: false,
-				ticks: {
-					min: -15
-				}
+				min: -15
 			}
 		}
 	},

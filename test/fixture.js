@@ -2,7 +2,7 @@
 
 'use strict';
 
-var utils = require('./utils');
+import utils from './utils';
 
 function readFile(url, callback) {
 	var request = new XMLHttpRequest();
@@ -42,9 +42,10 @@ function specFromFixture(description, inputs) {
 	var input = inputs.js || inputs.json;
 	it(input, function(done) {
 		loadConfig(input, function(json) {
+			var descr = json.description || (json.description = description);
 			var chart = utils.acquireChart(json.config, json.options);
 			if (!inputs.png) {
-				fail('Missing PNG comparison file for ' + inputs.json);
+				fail(descr + '\r\nMissing PNG comparison file for ' + input);
 				done();
 			}
 
@@ -79,7 +80,6 @@ function specsFromFixtures(path) {
 	};
 }
 
-module.exports = {
+export default {
 	specs: specsFromFixtures
 };
-
